@@ -1,31 +1,35 @@
-export interface IAuthor {
-    id: number;
-    username?: string;
-    avatar_url: string;
+export interface UserBase {
+    username: string,
 }
 
-export interface IPost {
+export interface User extends UserBase {
+    email: string;
+}
+
+export interface Post {
     id: number;
     title: string;
     desc: string;
-    author: IAuthor;
+    author: UserBase;
 }
 
-export interface IResult {
+export interface Result {
     error?: boolean;
     messages: {[key: string]: string};
     code: number;
 }
 
-export interface IAuthResult extends IResult {
+export interface AuthResult extends Result {
     authToken: string;
 }
 
 export interface IActions {
-    login(username: string, password: string): Promise<IAuthResult>;
-    register(username: string, email: string, password: string): Promise<IResult>;
+    login(username: string, password: string): Promise<AuthResult>;
+    register(username: string, email: string, password: string): Promise<Result>;
 
-    createPost(title: string, desc: string): Promise<IResult>;
-    deletePost(id: number): Promise<IResult>;
-    getPosts(offset: number, count: number): Promise<IPost[]>;
+    user(token: string): Promise<User>;
+
+    createPost(title: string, desc: string): Promise<Result>;
+    deletePost(id: number): Promise<Result>;
+    getPosts(offset: number, count: number): Promise<Post[]>;
 }
