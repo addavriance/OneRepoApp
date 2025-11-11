@@ -73,8 +73,7 @@ userSchema.statics.isUsernameTaken = async function(username: string, excludeUse
     return !!user;
 };
 
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+userSchema.index({ email: 1, username: 1 });
 userSchema.index({ createdAt: -1 });
 
 export interface IPost extends Timestamp, Document {
@@ -105,6 +104,8 @@ postSchema.statics.findByAuthorId = async function (id: string) {
     if (!user) return null;
     return this.find({author: user.username});
 }
+
+postSchema.index({author: 1, id: 1}, {unique: true});
 
 export const User = model<IUser, IUserModel>('User', userSchema);
 export const Post = model<IPost, IPostModel>('Post', postSchema);
