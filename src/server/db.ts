@@ -1,4 +1,4 @@
-import { Document, model, Schema, Model } from "mongoose";
+import {Document, model, Schema, Model } from "mongoose";
 
 export interface Timestamp {
     createdAt: Date;
@@ -9,6 +9,7 @@ export interface IUser extends Timestamp, Document {
     email: string;
     password: string;
     username: string;
+    posts: IPost[];
     avatar_url?: string;
 }
 
@@ -62,6 +63,7 @@ userSchema.statics.isEmailTaken = async function(email: string, excludeUserId?: 
         email: email.toLowerCase(),
         _id: { $ne: excludeUserId }
     });
+
     return !!user;
 };
 
@@ -76,12 +78,14 @@ userSchema.statics.isUsernameTaken = async function(username: string, excludeUse
 userSchema.index({ email: 1, username: 1 });
 userSchema.index({ createdAt: -1 });
 
-export interface IPost extends Timestamp, Document {
-    author: string;
+export interface PostBase<ID> extends Timestamp {
+    author: ID
     id: number;
     title: string;
     desc: string;
 }
+
+export interface IPost extends PostBase<Schema.Types.ObjectId>, Document { }
 
 export interface IPostModel extends Model<IPost> {
     findByAuthorId(id: string): Promise<IPost[]>;
@@ -89,7 +93,7 @@ export interface IPostModel extends Model<IPost> {
 }
 
 const postSchema: Schema<IPost, IPostModel> = new Schema<IPost, IPostModel>({
-    author: { type: String, required: true },
+    author: { type: Schema.Types.ObjectId, index: true, ref: 'IUser' },
     id: { type: Number, required: true },
     title: { type: String, required: true, trim: true, minlength: 3, maxlength: 30 },
     desc: { type: String, required: true, trim: true, minlength: 0, maxlength: 300 }
