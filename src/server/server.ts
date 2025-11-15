@@ -44,6 +44,8 @@ authRoutes.post('/register', async (req: Request, res: Response) => {
     }
 });
 
+// authRoutes.get('/user')
+
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
 

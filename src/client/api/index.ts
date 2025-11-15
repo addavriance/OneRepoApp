@@ -1,4 +1,4 @@
-import { APIActions, AuthResult, Post, Result, User } from "../../shared/interfaces";
+import {APIActions, AuthResult, PostsResult, Result, UserResult} from "../../shared/interfaces";
 
 export class API implements APIActions {
     readonly base_url = "...";
@@ -15,7 +15,7 @@ export class API implements APIActions {
         return Promise.resolve({});
     }
 
-    user(token: string): Promise<User> {
+    user(token: string): Promise<UserResult> {
         return Promise.resolve({});
     }
 
@@ -27,7 +27,7 @@ export class API implements APIActions {
         return Promise.resolve({});
     }
 
-    getPosts(offset: number, count: number): Promise<Post[]> {
-        return Promise.resolve([]);
+    getPosts(offset: number, count: number): Promise<PostsResult> {
+        return Promise.resolve({});
     }
 }

@@ -1,9 +1,9 @@
 import { BaseService, ServiceError } from "./base.service";
-import { Result } from "../../shared/interfaces";
+import {IUserActions, Result, UserBase, UserResult} from "../../shared/interfaces";
 import bcrypt from "bcryptjs";
-import {IUser, User} from "../db";
+import { IUser, User } from "../db";
 
-export class UserService extends BaseService {
+export class UserService extends BaseService implements IUserActions {
 
     async createUser(userData: {
         email: string;
@@ -67,5 +67,13 @@ export class UserService extends BaseService {
 
             return { user: userWithoutPassword };
         });
+    }
+
+    getUser(token: string): Promise<UserResult> {
+        return Promise.resolve(undefined);
+    }
+
+    saveUser(userData: UserBase): Promise<Result> {
+        return Promise.resolve(undefined);
     }
 }

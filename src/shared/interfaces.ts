@@ -1,39 +1,48 @@
-export interface UserBase {
-    username: string,
-}
-
-export interface User extends UserBase {
-    email: string;
-}
-
-export interface Post {
+export interface PostBase<ID = string> {
+    author: ID
     id: number;
     title: string;
     desc: string;
-    author: UserBase;
 }
 
-export interface Result {
-    error?: boolean;
-    messages: {[key: string]: string};
-    code: number;
+export interface UserBase {
+    email: string;
+    username: string;
+    posts: PostBase<string>[];
+    avatar_url?: string;
 }
 
-export interface AuthResult extends Result {
+export interface AuthData {
     authToken: string;
 }
 
-export interface IAuthActions {
-    login(username: string, password: string): Promise<AuthResult | Result>;
-    register(username: string, email: string, password: string): Promise<Result>;
+export interface Result<T = object> {
+    error?: boolean;
+    messages: {[key: string]: string};
+    code: number;
+    data?: T;
+}
 
-    user(token: string): Promise<User>;
+export type AuthResult = Result<AuthData>;
+
+export type UserResult = Result<UserBase>;
+
+export type PostsResult = Result<(PostBase & {created: number, updated: number})[]>;
+
+export interface IAuthActions {
+    login(username: string, password: string): Promise<AuthResult>;
+    register(username: string, email: string, password: string): Promise<Result>;
+}
+
+export interface IUserActions {
+    getUser(token: string): Promise<UserResult>;
+    saveUser(userData: UserBase): Promise<Result>;
 }
 
 export interface IPostActions {
     createPost(title: string, desc: string): Promise<Result>;
     deletePost(id: number): Promise<Result>;
-    getPosts(offset: number, count: number): Promise<Post[]>;
+    getPosts(offset: number, count: number): Promise<PostsResult>;
 }
 
 export interface APIActions extends IAuthActions, IPostActions {}

@@ -1,16 +1,13 @@
 import {Document, model, Schema, Model } from "mongoose";
+import {PostBase, UserBase} from "../shared/interfaces";
 
 export interface Timestamp {
     createdAt: Date;
     updatedAt: Date;
 }
 
-export interface IUser extends Timestamp, Document {
-    email: string;
+export interface IUser extends UserBase, Timestamp, Document {
     password: string;
-    username: string;
-    posts: IPost[];
-    avatar_url?: string;
 }
 
 export interface IUserModel extends Model<IUser> {
@@ -78,14 +75,7 @@ userSchema.statics.isUsernameTaken = async function(username: string, excludeUse
 userSchema.index({ email: 1, username: 1 });
 userSchema.index({ createdAt: -1 });
 
-export interface PostBase<ID> extends Timestamp {
-    author: ID
-    id: number;
-    title: string;
-    desc: string;
-}
-
-export interface IPost extends PostBase<Schema.Types.ObjectId>, Document { }
+export interface IPost extends PostBase<Schema.Types.ObjectId>, Timestamp, Document { }
 
 export interface IPostModel extends Model<IPost> {
     findByAuthorId(id: string): Promise<IPost[]>;

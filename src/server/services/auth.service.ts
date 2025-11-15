@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import {UserService} from "./user.service";
-import {AuthResult, IAuthActions, Result, User} from "../../shared/interfaces";
+import { UserService } from "./user.service";
+import { AuthResult, IAuthActions, Result } from "../../shared/interfaces";
 
 export class AuthService implements IAuthActions {
     private userService: UserService;
@@ -9,7 +9,7 @@ export class AuthService implements IAuthActions {
         this.userService = new UserService();
     }
 
-    async login(username: string, password: string): Promise<AuthResult | Result> {
+    async login(username: string, password: string): Promise<AuthResult> {
         const result = await this.userService.validateCredentials(username, password);
 
         if (result.error || !result.user) {
@@ -30,7 +30,7 @@ export class AuthService implements IAuthActions {
             error: false,
             messages: { success: "Login successful" },
             code: 200,
-            authToken: token
+            data: { authToken: token }
         };
     }
 
@@ -55,6 +55,4 @@ export class AuthService implements IAuthActions {
             code: 201
         };
     }
-
-    async user(token: string): Promise<User> { }
 }
