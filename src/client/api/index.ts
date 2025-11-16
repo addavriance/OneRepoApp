@@ -1,21 +1,43 @@
-import {APIActions, AuthResult, PostsResult, Result, UserResult} from "../../shared/interfaces";
+import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
+
+import {APIActions, AuthResult, PostsResult, Result, UserBase, UserResult} from "../../shared/interfaces";
 
 export class API implements APIActions {
-    readonly base_url = "...";
-    constructor() {
+    private apiClient: AxiosInstance;
 
+    constructor() {
+        const config: AxiosRequestConfig = {
+            baseURL: 'https://api.example.com',
+            timeout: 10000,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        }
+        this.apiClient = axios.create(config);
     }
 
     login(username: string, password: string): Promise<AuthResult | Result> {
-        return Promise.resolve({});
+        return this.apiClient.post('/login', {
+            username,
+            password
+        });
     }
 
 
     register(username: string, email: string, password: string): Promise<Result> {
+        return this.apiClient.post('/register', {
+            username,
+            email,
+            password
+        })
+    }
+
+    getUser(token: string): Promise<UserResult> {
         return Promise.resolve({});
     }
 
-    user(token: string): Promise<UserResult> {
+    saveUser(userData: UserBase): Promise<Result> {
         return Promise.resolve({});
     }
 
