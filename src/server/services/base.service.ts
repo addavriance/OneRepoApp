@@ -55,6 +55,7 @@ export abstract class BaseService {
                     messages[field] = fixValidationMessage(err.properties.message);
                 }
             });
+
             return {
                 error: true,
                 messages,

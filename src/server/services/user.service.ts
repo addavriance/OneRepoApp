@@ -1,4 +1,5 @@
 import { BaseService, ServiceError } from "./base.service";
+import { Request } from 'express'
 import {IUserActions, Result, UserBase, UserResult} from "../../shared/interfaces";
 import bcrypt from "bcryptjs";
 import { IUser, User } from "../db";
@@ -52,7 +53,8 @@ export class UserService extends BaseService implements IUserActions {
 
     async validateCredentials(username: string, password: string): Promise<Result & { user?: IUser }> {
         return this.executeService(async () => {
-            const user: IUser = await User.findOne({ username }).exec();
+            const user = await User.findOne({ username }).exec() as IUser | null;
+
             if (!user) {
                 throw new ServiceError('Invalid credentials');
             }
@@ -69,11 +71,25 @@ export class UserService extends BaseService implements IUserActions {
         });
     }
 
-    getUser(token: string): Promise<UserResult> {
+    getUser(): Promise<UserResult> {
         return Promise.resolve(undefined);
     }
 
-    saveUser(userData: UserBase): Promise<Result> {
-        return Promise.resolve(undefined);
+    saveUser(userData: UserBase, req?: Request): Promise<Result> {
+        return this.executeService(async () => {
+            await User.validate({...userData}, {pathsToSkip: 'password'});
+
+            if (req) {
+                const user = req.user!;
+
+                user.username = userData.username;
+                user.email = userData.email;
+                user.avatar_url = userData.avatar_url || "";
+
+                await user.save();
+            }
+
+            return {};
+        });
     }
 }

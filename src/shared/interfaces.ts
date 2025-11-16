@@ -8,7 +8,7 @@ export interface PostBase<ID = string> {
 export interface UserBase {
     email: string;
     username: string;
-    posts: PostBase<string>[];
+    posts: PostBase[];
     avatar_url?: string;
 }
 
@@ -45,4 +45,4 @@ export interface IPostActions {
     getPosts(offset: number, count: number): Promise<PostsResult>;
 }
 
-export interface APIActions extends IAuthActions, IPostActions {}
+export interface APIActions extends IAuthActions, IPostActions, IUserActions {}
