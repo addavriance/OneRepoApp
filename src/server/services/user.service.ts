@@ -72,7 +72,7 @@ export class UserService extends BaseService implements IUserActions {
     }
 
     getUser(): Promise<UserResult> {
-        return Promise.resolve(undefined);
+        return Promise.resolve({}); // заглушка
     }
 
     saveUser(userData: UserBase, req?: Request): Promise<Result> {

@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from 'express';
 import jwt from 'jsonwebtoken';
-import {User} from "../db";
+import {IUser, User} from "../db";
 
 interface JwtPayload {
     userId: string;
@@ -36,7 +36,7 @@ export const authMiddleware = async (
             return;
         }
 
-        const user = await User.findById(decoded.userId).select('-password').exec();
+        const user = await User.findById(decoded.userId).select('-password').exec() as IUser;
 
         if (!user) {
             res.status(401).json({

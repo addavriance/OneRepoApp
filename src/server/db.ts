@@ -94,7 +94,7 @@ postSchema.statics.findByAuthorId = async function (id: string) {
 }
 
 postSchema.statics.findByAuthorId = async function (id: string) {
-    const user: IUser = await User.findOne({_id: id}).exec();
+    const user= await User.findOne({_id: id}).exec() as IUser;
     if (!user) return null;
     return this.find({author: user.username});
 }

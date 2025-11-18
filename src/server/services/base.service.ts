@@ -46,7 +46,7 @@ export abstract class BaseService {
         }
     }
 
-    protected handleError(error: MongoError): Result {
+    protected handleError(error: MongooseError | MongoError): Result {
         if (error instanceof MongooseError.ValidationError) {
             const messages: { [key: string]: string } = {};
             Object.keys(error.errors).forEach(field => {
@@ -63,7 +63,7 @@ export abstract class BaseService {
             };
         }
 
-        if (error.code === 11000 && error instanceof MongoServerError) {
+        if (error instanceof MongoServerError && error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
             const value = error.keyValue[field];
             return {
