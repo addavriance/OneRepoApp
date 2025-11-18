@@ -18,8 +18,8 @@ await mongoose.connect('mongodb://localhost:27017/mydb');
 const authRoutes = new Router();
 const authService = new AuthService();
 
-const postsRoutes = new Router();
-// const postsService = new PostsService();
+const postRoutes = new Router();
+const postService = new PostService();
 
 const userRoutes = new Router();
 const userService = new UserService();
@@ -96,15 +96,30 @@ userRoutes.post('/saveUser', authMiddleware, validateBody(saveUserSchema), async
     }
 })
 
+const getPostsSchema = z.object({
+    offset: z.number(),
+    count: z.number(),
+})
 
-    const result = await userService.saveUser(data, req);
+postRoutes.get('/getPosts', authMiddleware, validateBody(getPostsSchema), async (req: Request, res: Response) => {
+    try {
+        const {offset, count} = req.body;
 
-    res.status(result.code).json(result);
+        const result = await postService.getPosts(offset, count);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: {server: "Internal server error"},
+            code: 500
+        });
+    }
 })
 
 app.use('/api/auth', authRoutes);
-app.use('/api/posts', postsRoutes);
-app.use('/api/user/', userRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/post', postRoutes);
 
 app.get('/health', (req, res) => {
     res.status(200).json({status: "OK"});
