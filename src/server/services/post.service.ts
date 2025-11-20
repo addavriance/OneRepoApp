@@ -47,7 +47,7 @@ export class PostService extends BaseService implements IPostActions {
     }
 
     async getPost(postId: number): Promise<PostGetResult> {
-        const result = await Post.findOneAndDelete({
+        const result = await Post.findOne({
             id: postId
         }) as IPost;
 
