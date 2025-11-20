@@ -78,6 +78,45 @@ export function validateParams(schema: z.ZodSchema) {
     };
 }
 
+export function validateQuery(schema: z.ZodSchema) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const requiredFields = getRequiredFieldsFromSchema(schema);
+            const missingFields = requiredFields.filter(field => !req.query || req.query[field] === undefined);
+
+            if (missingFields.length > 0) {
+                const missingFieldsErrors = Object.fromEntries(
+                    missingFields.map(field => [field, `${field} is required`])
+                );
+
+                return res.status(400).json({
+                    error: true,
+                    messages: missingFieldsErrors,
+                    code: 400,
+                });
+            }
+
+            schema.parse(req.query);
+
+            next();
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    error: true,
+                    messages: formatZodError(error),
+                    code: 400,
+                });
+            }
+
+            return res.status(500).json({
+                error: true,
+                message: "Internal server error (query validator)",
+                code: 500,
+            });
+        }
+    };
+}
+
 function getRequiredFieldsFromSchema(schema: z.ZodSchema): string[] {
     if (schema instanceof z.ZodObject) {
         const shape = schema.shape;
