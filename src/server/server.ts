@@ -4,7 +4,7 @@ import cors from 'cors'
 import {AuthService} from "./services/auth.service";
 import {authMiddleware} from "./middleware/auth.middleware";
 import {z} from "zod";
-import {validateBody, validateParams} from "./middleware/validation.middleware";
+import {validateBody, validateParams, validateQuery} from "./middleware/validation.middleware";
 import {ServiceFactory} from "./services/service.factory";
 
 const app = express();
@@ -96,18 +96,22 @@ userRoutes.post('/save', authMiddleware, validateBody(saveUserSchema), async (re
 })
 
 const getPostsSchema = z.object({
-    offset: z.number(),
-    count: z.number(),
-    sortBy: z.number(),
+    offset: z.string().min(1, 'offset is required').regex(new RegExp(/^\d+$/), "Offset must be a positive number"),
+    count: z.string().min(1, 'count is required').regex(new RegExp(/^\d+$/), "Count must be a positive number"),
+    sortBy: z.string().min(1, 'sortBy is required').regex(new RegExp(/^\d+$/), "sortBy must be a positive number"),
 })
 
-postRoutes.get('/list', authMiddleware, validateBody(getPostsSchema), async (req: Request, res: Response) => {
+postRoutes.get('/list', authMiddleware, validateQuery(getPostsSchema), async (req: Request, res: Response) => {
     try {
         const postService = ServiceFactory.createPostService(req);
 
-        const {offset, count, sortBy} = req.body;
+        const {offset, count, sortBy} = req.query;
 
-        const result = await postService.getPosts(offset, count, sortBy);
+        const result = await postService.getPosts(
+            parseInt(offset as string),
+            parseInt(count as string),
+            parseInt(sortBy as string)
+        );
 
         res.status(result.code).json(result);
     } catch {
