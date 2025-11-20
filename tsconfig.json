@@ -2,14 +2,23 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": ["ES2020", "DOM"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "typeRoots": ["./node_modules/@types", "./src/server/types"],
-    "types": ["node", "express"]
+    "types": ["node", "react", "react-dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/client/*"]
+    }
   },
-  "include": ["src/client/**/*", "src/server/**/*", "src/shared/**/*"]
+  "include": ["src/client/**/*", "src/shared/**/*"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
