@@ -78,29 +78,55 @@ userSchema.index({createdAt: -1});
 export interface IPost extends PostBase<Schema.Types.ObjectId>, Timestamp, Document { }
 
 export interface IPostModel extends Model<IPost> {
-    findByAuthorId(id: string): Promise<IPost[]>;
-    findByAuthorName(name: string): Promise<IPost[]>;
+    findByAuthorId(authorId: Schema.Types.ObjectId): Promise<IPost[]>;
+
+    findByAuthorUsername(username: string): Promise<IPost[]>;
 }
 
 const postSchema: Schema<IPost, IPostModel> = new Schema<IPost, IPostModel>({
-    author: { type: Schema.Types.ObjectId, index: true, ref: 'IUser' },
-    id: { type: Number, required: true },
-    title: { type: String, required: true, trim: true, minlength: 3, maxlength: 30 },
-    desc: { type: String, required: true, trim: true, minlength: 0, maxlength: 300 }
+    author: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        index: true,
+        ref: 'User'
+    },
+    id: {
+        type: Number,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 3,
+        maxlength: 30
+    },
+    desc: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 0,
+        maxlength: 300
+    },
+}, {
+    timestamps: true
 });
 
-postSchema.statics.findByAuthorId = async function (id: string) {
-    return this.find({author: id});
+postSchema.statics.findByAuthorId = async function (authorId: Schema.Types.ObjectId) {
+    return this.find({author: authorId});
 }
 
-postSchema.statics.findByAuthorId = async function (id: string) {
-    const user= await User.findOne({_id: id}).exec() as IUser;
-    if (!user) return null;
-    return this.find({author: user.username});
+postSchema.statics.findByAuthorUsername = async function (username: string) {
+    const user = await User.findOne({username}).exec();
+    if (!user) return [];
+    return this.find({author: user._id});
 }
 
-postSchema.index({author: 1, id: 1}, {unique: true});
+postSchema.index({author: 1, id: 1}, {
+    unique: true,
+});
+
+postSchema.index({id: 1});
 
 export const User = model<IUser, IUserModel>('User', userSchema);
 export const Post = model<IPost, IPostModel>('Post', postSchema);
-

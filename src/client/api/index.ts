@@ -1,6 +1,6 @@
 import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
 
-import {APIActions, AuthResult, PostsResult, Result, UserBase, UserResult} from "../../shared/interfaces";
+import {APIActions, AuthResult, PostListResult, Result, UserBase, UserResult} from "../../shared/interfaces";
 
 export class API implements APIActions {
     private apiClient: AxiosInstance;
@@ -49,7 +49,7 @@ export class API implements APIActions {
         return Promise.resolve({});
     }
 
-    getPosts(offset: number, count: number): Promise<PostsResult> {
+    getPosts(offset: number, count: number): Promise<PostListResult> {
         return Promise.resolve({});
     }
 }

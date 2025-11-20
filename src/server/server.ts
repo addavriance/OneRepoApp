@@ -6,7 +6,7 @@ import {UserService} from "./services/user.service";
 import {authMiddleware} from "./middleware/auth.middleware";
 import {PostService} from "./services/post.service";
 import {z} from "zod";
-import {validateBody} from "./middleware/validation.middleware";
+import {validateBody, validateParams} from "./middleware/validation.middleware";
 
 const app = express();
 
@@ -99,13 +99,16 @@ userRoutes.post('/saveUser', authMiddleware, validateBody(saveUserSchema), async
 const getPostsSchema = z.object({
     offset: z.number(),
     count: z.number(),
+    sortBy: z.number(),
 })
 
-postRoutes.get('/getPosts', authMiddleware, validateBody(getPostsSchema), async (req: Request, res: Response) => {
+postRoutes.get('/list', authMiddleware, validateBody(getPostsSchema), async (req: Request, res: Response) => {
     try {
-        const {offset, count} = req.body;
+        const postService = ServiceFactory.createPostService(req);
 
-        const result = await postService.getPosts(offset, count);
+        const {offset, count, sortBy} = req.body;
+
+        const result = await postService.getPosts(offset, count, sortBy);
 
         res.status(result.code).json(result);
     } catch {
@@ -116,6 +119,66 @@ postRoutes.get('/getPosts', authMiddleware, validateBody(getPostsSchema), async 
         });
     }
 })
+
+const createPostSchema = z.object({
+    title: z.string(),
+    desc: z.string(),
+})
+
+postRoutes.post('/create', authMiddleware, validateBody(createPostSchema), async (req: Request, res: Response) => {
+    try {
+        const postService = ServiceFactory.createPostService(req);
+
+        const {title, desc} = req.body;
+
+        const result = await postService.createPost(title, desc);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: {server: "Internal server error"},
+            code: 500
+        });
+    }
+})
+
+const getDeletePostSchema = z.object({
+    id: z.string().min(1, 'Post ID is required').regex(new RegExp(/^\d+$/), "Post ID must be a positive number")
+})
+
+postRoutes.get('/:id', authMiddleware, validateParams(getDeletePostSchema), async (req: Request, res: Response) => {
+    try {
+        const postId = parseInt(req.params.id);
+        const postService = ServiceFactory.createPostService(req);
+        const result = await postService.getPost(postId);
+
+        res.status(result.code).json(result)
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+});
+
+postRoutes.delete('/:id', authMiddleware, validateParams(getDeletePostSchema), async (req: Request, res: Response) => {
+    try {
+        const postId = parseInt(req.params.id);
+
+        const postService = ServiceFactory.createPostService(req);
+        const result = await postService.deletePost(postId);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);

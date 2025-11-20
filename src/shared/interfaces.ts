@@ -1,3 +1,5 @@
+import {Schema} from "mongoose";
+
 export interface PostBase<ID = string> {
     author: ID
     id: number;
@@ -8,7 +10,6 @@ export interface PostBase<ID = string> {
 export interface UserBase {
     email: string;
     username: string;
-    posts: PostBase[];
     avatar_url?: string;
 }
 
@@ -16,9 +17,15 @@ export interface AuthData {
     authToken: string;
 }
 
+export type PostData = PostBase & {createdAt: number, updatedAt: number};
+
+export interface PostCreateData {
+    id: number
+}
+
 export interface Result<T = object> {
     error?: boolean;
-    messages: {[key: string]: string};
+    messages?: {[key: string]: string};
     code: number;
     data?: T;
 }
@@ -27,7 +34,11 @@ export type AuthResult = Result<AuthData>;
 
 export type UserResult = Result<UserBase>;
 
-export type PostsResult = Result<(PostBase & {created: number, updated: number})[]>;
+export type PostCreateResult = Result<PostCreateData>
+
+export type PostGetResult = Result<PostData>
+
+export type PostListResult = Result<PostData[]>;
 
 export interface IAuthActions {
     login(username: string, password: string): Promise<AuthResult>;
@@ -40,9 +51,10 @@ export interface IUserActions {
 }
 
 export interface IPostActions {
-    createPost(title: string, desc: string): Promise<Result>;
-    deletePost(id: number): Promise<Result>;
-    getPosts(offset: number, count: number): Promise<PostsResult>;
+    createPost(title: string, desc: string): Promise<PostCreateResult>;
+    getPost(postId: number): Promise<PostGetResult>;
+    deletePost(postId: number, userId?: Schema.Types.ObjectId): Promise<Result>;
+    getPosts(offset: number, count: number, sortBy: number): Promise<PostListResult>;
 }
 
 export interface APIActions extends IAuthActions, IPostActions, IUserActions {}
