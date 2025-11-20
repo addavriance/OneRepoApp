@@ -1,4 +1,4 @@
-import {Document, model, Schema, Model } from "mongoose";
+import {Document, model, Schema, Model} from "mongoose";
 import {PostBase, UserBase} from "../shared/interfaces";
 
 export interface Timestamp {
@@ -47,24 +47,24 @@ const userSchema: Schema<IUser, IUserModel> = new Schema<IUser, IUserModel>({
     timestamps: true // автоматически добавляет createdAt и updatedAt
 });
 
-userSchema.statics.findByEmail = function(email: string) {
-    return this.findOne({ email: email.toLowerCase() });
+userSchema.statics.findByEmail = function (email: string) {
+    return this.findOne({email: email.toLowerCase()});
 };
 
-userSchema.statics.findByUsername = function(username: string) {
-    return this.findOne({ username });
+userSchema.statics.findByUsername = function (username: string) {
+    return this.findOne({username});
 };
 
-userSchema.statics.isEmailTaken = async function(email: string, excludeUserId?: string) {
+userSchema.statics.isEmailTaken = async function (email: string, excludeUserId?: string) {
     const user = await this.findOne({
         email: email.toLowerCase(),
-        _id: { $ne: excludeUserId }
+        _id: {$ne: excludeUserId}
     });
 
     return !!user;
 };
 
-userSchema.statics.isUsernameTaken = async function(username: string, excludeUserId?: string) {
+userSchema.statics.isUsernameTaken = async function (username: string, excludeUserId?: string) {
     const user = await this.findOne({
         username,
         _id: { $ne: excludeUserId }
@@ -72,8 +72,8 @@ userSchema.statics.isUsernameTaken = async function(username: string, excludeUse
     return !!user;
 };
 
-userSchema.index({ email: 1, username: 1 });
-userSchema.index({ createdAt: -1 });
+userSchema.index({email: 1, username: 1});
+userSchema.index({createdAt: -1});
 
 export interface IPost extends PostBase<Schema.Types.ObjectId>, Timestamp, Document { }
 
