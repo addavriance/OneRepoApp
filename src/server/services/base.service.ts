@@ -1,6 +1,7 @@
 import { MongoError, MongoServerError } from "mongodb";
 import { Result } from "../../shared/interfaces";
 import { Error as MongooseError } from "mongoose";
+import {IUser} from "../db";
 
 function fixValidationMessage(message) {
     const requiredPattern = /^Path `(\w+)` is required\.$/;
@@ -28,6 +29,7 @@ export class ServiceError extends Error {
 }
 
 export abstract class BaseService {
+    protected constructor(private currentUser: IUser) {}
 
     protected async executeService<TResult>(
         operation: () => Promise<TResult>

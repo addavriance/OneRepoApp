@@ -2,11 +2,10 @@ import express, {Router, Request, Response} from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import {AuthService} from "./services/auth.service";
-import {UserService} from "./services/user.service";
 import {authMiddleware} from "./middleware/auth.middleware";
-import {PostService} from "./services/post.service";
 import {z} from "zod";
 import {validateBody, validateParams} from "./middleware/validation.middleware";
+import {ServiceFactory} from "./services/service.factory";
 
 const app = express();
 
@@ -19,10 +18,8 @@ const authRoutes = new Router();
 const authService = new AuthService();
 
 const postRoutes = new Router();
-const postService = new PostService();
 
 const userRoutes = new Router();
-const userService = new UserService();
 
 const loginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -63,7 +60,7 @@ authRoutes.post('/register', validateBody(registerSchema), async (req: Request, 
     }
 });
 
-userRoutes.get('/getUser', authMiddleware, async (req: Request, res: Response) => {
+userRoutes.get('/get', authMiddleware, async (req: Request, res: Response) => {
     res.status(200).json({
             error: false,
             code: 200,
@@ -82,10 +79,12 @@ const saveUserSchema = z.object({
     avatarUrl: z.url("Invalid url format").optional(),
 });
 
-userRoutes.post('/saveUser', authMiddleware, validateBody(saveUserSchema), async (req: Request, res: Response) => {
+userRoutes.post('/save', authMiddleware, validateBody(saveUserSchema), async (req: Request, res: Response) => {
     try {
+        const userService = ServiceFactory.createUserService(req);
+
         const data = req.body;
-        const result = await userService.saveUser(data, req);
+        const result = await userService.saveUser(data);
         res.status(result.code).json(result);
     } catch {
         res.status(500).json({

@@ -1,10 +1,12 @@
 import { BaseService, ServiceError } from "./base.service";
-import { Request } from 'express'
 import {IUserActions, Result, UserBase, UserResult} from "../../shared/interfaces";
 import bcrypt from "bcryptjs";
 import { IUser, User } from "../db";
 
 export class UserService extends BaseService implements IUserActions {
+    constructor(private currentUser: IUser) {
+        super(currentUser);
+    }
 
     async createUser(userData: {
         email: string;
@@ -71,23 +73,29 @@ export class UserService extends BaseService implements IUserActions {
         });
     }
 
-    getUser(): Promise<UserResult> {
-        return Promise.resolve({}); // заглушка
+    async getUser(): Promise<UserResult> {
+        return {
+            error: false,
+            code: 200,
+            data: {
+                username: this.currentUser.username,
+                email: this.currentUser.email,
+                avatar_url: this.currentUser.avatar_url,
+            },
+        }
     }
 
-    saveUser(userData: UserBase, req?: Request): Promise<Result> {
+    saveUser(userData: UserBase): Promise<Result> {
         return this.executeService(async () => {
             await User.validate({...userData}, {pathsToSkip: 'password'});
 
-            if (req) {
-                const user = req.user!;
+            const user = this.currentUser;
 
-                user.username = userData.username;
-                user.email = userData.email;
-                user.avatar_url = userData.avatar_url || "";
+            user.username = userData.username;
+            user.email = userData.email;
+            user.avatar_url = userData.avatar_url || "";
 
-                await user.save();
-            }
+            await user.save();
 
             return {};
         });
