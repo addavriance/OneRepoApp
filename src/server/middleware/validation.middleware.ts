@@ -23,21 +23,9 @@ export function validateBody(schema: z.ZodSchema) {
             next();
         } catch (error) {
             if (error instanceof z.ZodError) {
-                const errorObject = z.treeifyError(error) as ZodFormattedError;
-
-                const flattenedErrors: Record<string, string> = {};
-                if (errorObject.properties) {
-                    for (const key in errorObject.properties) {
-                        const fieldErrors = errorObject.properties[key].errors;
-                        if (fieldErrors && fieldErrors.length > 0) {
-                            flattenedErrors[key] = fieldErrors[0];
-                        }
-                    }
-                }
-
                 return res.status(400).json({
                     error: true,
-                    messages: flattenedErrors,
+                    messages: formatZodError(error),
                     code: 400,
                 });
             }
@@ -127,4 +115,20 @@ function isFieldRequired(fieldSchema: z.ZodTypeAny): boolean {
     }
 
     return true;
+}
+
+function formatZodError(error: z.ZodError) {
+    const errorObject = z.treeifyError(error) as ZodFormattedError;
+
+    const flattenedErrors: Record<string, string> = {};
+    if (errorObject.properties) {
+        for (const key in errorObject.properties) {
+            const fieldErrors = errorObject.properties[key].errors;
+            if (fieldErrors && fieldErrors.length > 0) {
+                flattenedErrors[key] = fieldErrors[0];
+            }
+        }
+    }
+
+    return flattenedErrors;
 }
