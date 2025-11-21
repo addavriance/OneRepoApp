@@ -1,19 +1,21 @@
-import {useEffect, useState} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {useToast} from "@/hooks/use-toast";
+import {useAuth} from "@/contexts/AuthContext";
 import {api} from "@/api";
-import {PostData} from "../../shared/interfaces";
+import {PostDataUserBased} from "../../shared/interfaces";
 import {hasFlag, setFlag, SortType} from "../../shared/flags";
-import {Trash2, Eye, Plus} from "lucide-react";
+import {Trash2, Eye, Plus, LogOut} from "lucide-react";
 
 export function PostsPage() {
-    const [posts, setPosts] = useState<PostData[]>([]);
+    const [posts, setPosts] = useState<PostDataUserBased[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState(SortType.CreatedDate);
     const navigate = useNavigate();
     const {toast} = useToast();
+    const {user, logout} = useAuth();
 
     const loadPosts = async () => {
         if (!posts) setIsLoading(true);
@@ -71,6 +73,11 @@ export function PostsPage() {
         }
     };
 
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     const formatDate = (timestamp: number) => {
         return new Date(timestamp).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -81,11 +88,22 @@ export function PostsPage() {
 
     const switchSortBy = (flag: SortType) => setSortBy(setFlag(sortBy, flag));
 
+    const canEditPost = (post: PostDataUserBased) => {
+        return user && (post.author.username === user.username);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto py-8">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">Posts</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold">Posts</h1>
+                        {user && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Welcome, {user.username}!
+                            </p>
+                        )}
+                    </div>
                     <div className="flex gap-2">
                         <Button
                             size="sm"
@@ -105,6 +123,10 @@ export function PostsPage() {
                             <Plus className="mr-2 h-4 w-4"/>
                             New Post
                         </Button>
+                        <Button size="sm" variant="outline" onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4"/>
+                            Logout
+                        </Button>
                     </div>
                 </div>
 
@@ -123,7 +145,10 @@ export function PostsPage() {
                                 <CardHeader>
                                     <CardTitle>{post.title}</CardTitle>
                                     <CardDescription>
-                                        Created: {formatDate(post.createdAt)}
+                                        <div className="flex flex-col gap-1">
+                                            <span>By: {post.author.username}</span>
+                                            <span>Created: {formatDate(post.createdAt)}</span>
+                                        </div>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -140,14 +165,16 @@ export function PostsPage() {
                                         <Eye className="mr-2 h-4 w-4"/>
                                         View
                                     </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => handleDelete(post.id)}
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4"/>
-                                        Delete
-                                    </Button>
+                                    {canEditPost(post) && (
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => handleDelete(post.id)}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4"/>
+                                            Delete
+                                        </Button>
+                                    ) as ReactNode}
                                 </CardFooter>
                             </Card>
                         ))}

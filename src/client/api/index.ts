@@ -9,7 +9,6 @@ import {
     UserBase,
     UserResult
 } from "../../shared/interfaces";
-import {data} from "autoprefixer";
 
 export class API implements APIActions {
     private apiClient: AxiosInstance;
@@ -62,7 +61,7 @@ export class API implements APIActions {
             headers: {
                 Authorization: `Bearer ${token}`
             }
-        });
+        } as AxiosRequestConfig);
         return response.data;
     }
 

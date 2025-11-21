@@ -4,15 +4,17 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {useToast} from "@/hooks/use-toast";
 import {api} from "@/api";
-import {PostData} from "../../shared/interfaces";
+import {PostDataUserBased} from "../../shared/interfaces";
 import {ArrowLeft, Trash2} from "lucide-react";
+import {useAuth} from "@/contexts/AuthContext.tsx";
 
 export function PostDetailPage() {
     const {id} = useParams<{ id: string }>();
-    const [post, setPost] = useState<PostData | null>(null);
+    const [post, setPost] = useState<PostDataUserBased | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const {toast} = useToast();
+    const { user } = useAuth();
 
     useEffect(() => {
         const loadPost = async () => {
@@ -85,6 +87,10 @@ export function PostDetailPage() {
         });
     };
 
+    const canEditPost = (post: PostDataUserBased) => {
+        return user && (post.author.username === user.username);
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -109,14 +115,14 @@ export function PostDetailPage() {
                         <ArrowLeft className="mr-2 h-4 w-4"/>
                         Back to Posts
                     </Button>
-                    <Button
+                    {canEditPost(post) && (<Button
                         size="sm"
                         variant="destructive"
                         onClick={handleDelete}
                     >
                         <Trash2 className="mr-2 h-4 w-4"/>
                         Delete Post
-                    </Button>
+                    </Button>)}
                 </div>
 
                 <Card>

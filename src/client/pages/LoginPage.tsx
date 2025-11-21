@@ -5,6 +5,7 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {useToast} from "@/hooks/use-toast";
+import {useAuth} from "@/contexts/AuthContext";
 import {api} from "@/api";
 
 export function LoginPage() {
@@ -13,6 +14,7 @@ export function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const {toast} = useToast();
+    const {login} = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,7 +29,8 @@ export function LoginPage() {
                     title: "Error",
                     description: result.messages?.server || "Login failed"
                 });
-            } else {
+            } else if (result.data?.authToken) {
+                await login(result.data.authToken);
                 toast({
                     title: "Success",
                     description: "Logged in successfully"
