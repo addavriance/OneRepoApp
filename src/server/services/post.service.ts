@@ -2,7 +2,7 @@ import {BaseService} from "./base.service";
 import {
     IPostActions,
     PostBase,
-    PostData,
+    PostDataUserBased,
     PostListResult,
     Result,
     PostCreateResult,
@@ -17,8 +17,8 @@ export class PostService extends BaseService implements IPostActions {
         super(currentUser);
     }
 
-    private async getNextPostId(authorId: Schema.Types.ObjectId): Promise<number> {
-        const lastPost = await Post.findOne({ author: authorId })
+    private async getNextPostId(): Promise<number> {
+        const lastPost = await Post.findOne()
             .sort({ id: -1 })
             .select('id')
             .lean() as PostBase;
@@ -28,7 +28,7 @@ export class PostService extends BaseService implements IPostActions {
 
     async createPost(title: string, desc: string): Promise<PostCreateResult> {
         const author = this.currentUser._id as Schema.Types.ObjectId;
-        const newId = await this.getNextPostId(author);
+        const newId = await this.getNextPostId();
 
         await Post.create({
             id: newId,
@@ -49,7 +49,7 @@ export class PostService extends BaseService implements IPostActions {
     async getPost(postId: number): Promise<PostGetResult> {
         const result = await Post.findOne({
             id: postId
-        }) as IPost;
+        }).populate('author', 'username') as IPost;
 
         if (!result) {
             return {
@@ -69,7 +69,7 @@ export class PostService extends BaseService implements IPostActions {
                 desc: result.desc,
                 createdAt: result.createdAt,
                 updatedAt: result.updatedAt
-            } as PostData
+            } as PostDataUserBased
         };
     }
 
@@ -110,9 +110,9 @@ export class PostService extends BaseService implements IPostActions {
         const createdAt = hasFlag(sortBy, SortType.CreatedDate) ? 1 : -1;
         const updatedAt = hasFlag(sortBy, SortType.UpdatedDate) ? 1 : -1;
 
-        const result = await Post.find().sort({createdAt, updatedAt}).skip(offset).limit(count).exec() as IPost[];
+        const result = await Post.find().populate('author', 'username').sort({createdAt, updatedAt}).skip(offset).limit(count).exec() as IPost[];
 
-        const postsData: PostData[] = result.map((postRaw) => {
+        const postsData: PostDataUserBased[] = result.map((postRaw) => {
             return {
                 id: postRaw.id ,
                 title: postRaw.title,
@@ -120,7 +120,7 @@ export class PostService extends BaseService implements IPostActions {
                 desc: postRaw.desc,
                 createdAt: postRaw.createdAt,
                 updatedAt: postRaw.updatedAt
-            } as PostData;
+            } as PostDataUserBased;
         });
 
         return {

@@ -18,6 +18,7 @@ export interface AuthData {
 }
 
 export type PostData = PostBase & {createdAt: number, updatedAt: number};
+export type PostDataUserBased = PostBase<Partial<UserBase>> & {createdAt: number, updatedAt: number};
 
 export interface PostCreateData {
     id: number
@@ -36,9 +37,9 @@ export type UserResult = Result<UserBase>;
 
 export type PostCreateResult = Result<PostCreateData>
 
-export type PostGetResult = Result<PostData>
+export type PostGetResult = Result<PostDataUserBased>
 
-export type PostListResult = Result<PostData[]>;
+export type PostListResult = Result<PostDataUserBased[]>;
 
 export interface IAuthActions {
     login(username: string, password: string): Promise<AuthResult>;
