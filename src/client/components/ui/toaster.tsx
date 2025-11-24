@@ -7,6 +7,7 @@ import {
     ToastViewport,
 } from "@/components/ui/toast"
 import {useToast} from "@/hooks/use-toast"
+import React from "react";
 
 export function Toaster() {
     const {toasts} = useToast()
@@ -26,7 +27,7 @@ export function Toaster() {
                         <ToastClose/>
                     </Toast>
                 )
-            })}
+            }) as React.ReactNode}
             <ToastViewport/>
         </ToastProvider>
     )
