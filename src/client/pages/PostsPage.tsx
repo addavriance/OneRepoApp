@@ -3,11 +3,11 @@ import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {useToast} from "@/hooks/use-toast";
-import {useAuth} from "@/contexts/AuthContext";
+import {useAuth} from "@/contexts/auth/useAuth";
 import {api} from "@/api";
 import {PostDataUserBased} from "../../shared/interfaces";
 import {hasFlag, setFlag, SortType} from "../../shared/flags";
-import {Trash2, Eye, Plus, LogOut} from "lucide-react";
+import {Trash2, Eye, Plus, Loader2} from "lucide-react";
 
 export function PostsPage() {
     const [posts, setPosts] = useState<PostDataUserBased[]>([]);
@@ -15,7 +15,7 @@ export function PostsPage() {
     const [sortBy, setSortBy] = useState(SortType.CreatedDate);
     const navigate = useNavigate();
     const {toast} = useToast();
-    const {user, logout} = useAuth();
+    const {user, isAuthenticated, isLoading: isAuthLoading} = useAuth();
 
     const loadPosts = async () => {
         if (!posts) setIsLoading(true);
@@ -44,8 +44,15 @@ export function PostsPage() {
     };
 
     useEffect(() => {
-        loadPosts();
-    }, [sortBy]);
+        if (!isAuthenticated && !isAuthLoading) {
+            navigate('/login');
+            return;
+        }
+
+        if (isAuthenticated) {
+            loadPosts();
+        }
+    }, [isAuthLoading, sortBy]);
 
     const handleDelete = async (postId: number) => {
         try {
@@ -73,11 +80,6 @@ export function PostsPage() {
         }
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
-    };
-
     const formatDate = (timestamp: number) => {
         return new Date(timestamp).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -95,43 +97,11 @@ export function PostsPage() {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto py-8">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-3xl font-bold">Posts</h1>
-                        {user && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Welcome, {user.username}!
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            size="sm"
-                            variant={(hasFlag(sortBy, SortType.CreatedDate) ? "default" : "outline") as "default" | "outline"}
-                            onClick={() => switchSortBy(SortType.CreatedDate)}
-                        >
-                            Sort by Created
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={(hasFlag(sortBy, SortType.UpdatedDate) ? "default" : "outline") as "default" | "outline"}
-                            onClick={() => switchSortBy(SortType.UpdatedDate)}
-                        >
-                            Sort by Updated
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => navigate("/posts/create")}>
-                            <Plus className="mr-2 h-4 w-4"/>
-                            New Post
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4"/>
-                            Logout
-                        </Button>
-                    </div>
-                </div>
-
                 {isLoading ? (
-                    <div className="text-center py-12">Loading posts...</div>
+                    <div className="text-center py-12 flex justify-center gap-2">
+                        <Loader2 className="animate-spin"/>
+                        Loading posts...
+                    </div>
                 ) : posts.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center">
@@ -139,45 +109,69 @@ export function PostsPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {posts.map((post) => (
-                            <Card key={post.id}>
-                                <CardHeader>
-                                    <CardTitle>{post.title}</CardTitle>
-                                    <CardDescription>
-                                        <div className="flex flex-col gap-1">
-                                            <span>By: {post.author.username}</span>
-                                            <span>Created: {formatDate(post.createdAt)}</span>
-                                        </div>
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground line-clamp-3">
-                                        {post.desc}
-                                    </p>
-                                </CardContent>
-                                <CardFooter className="flex justify-between">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => navigate(`/posts/${post.id}`)}
-                                    >
-                                        <Eye className="mr-2 h-4 w-4"/>
-                                        View
-                                    </Button>
-                                    {canEditPost(post) && (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex justify-between">
+                            <Button size="sm" variant="secondary" onClick={() => navigate("/posts/create")}>
+                                <Plus className="mr-2 h-4 w-4"/>
+                                New Post
+                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant={(hasFlag(sortBy, SortType.CreatedDate) ? "default" : "outline") as "default" | "outline"}
+                                    onClick={() => switchSortBy(SortType.CreatedDate)}
+                                >
+                                    Sort by Created
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={(hasFlag(sortBy, SortType.UpdatedDate) ? "default" : "outline") as "default" | "outline"}
+                                    onClick={() => switchSortBy(SortType.UpdatedDate)}
+                                >
+                                    Sort by Updated
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {posts.map((post) => (
+                                <Card key={post.id}>
+                                    <CardHeader>
+                                        <CardTitle>{post.title}</CardTitle>
+                                        <CardDescription>
+                                            <div className="flex flex-col gap-1">
+                                                <span>By: {post.author.username}</span>
+                                                <span>Created: {formatDate(post.createdAt)}</span>
+                                            </div>
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground line-clamp-3">
+                                            {post.desc}
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter className="flex justify-between">
                                         <Button
-                                            variant="destructive"
+                                            variant="outline"
                                             size="sm"
-                                            onClick={() => handleDelete(post.id)}
+                                            onClick={() => navigate(`/posts/${post.id}`)}
                                         >
-                                            <Trash2 className="mr-2 h-4 w-4"/>
-                                            Delete
+                                            <Eye className="mr-2 h-4 w-4"/>
+                                            View
                                         </Button>
-                                    ) as ReactNode}
-                                </CardFooter>
-                            </Card>
-                        ))}
+                                        {canEditPost(post) && (
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => handleDelete(post.id)}
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4"/>
+                                                Delete
+                                            </Button>
+                                        ) as ReactNode}
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

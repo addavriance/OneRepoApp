@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -7,6 +7,7 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {useToast} from "@/hooks/use-toast";
 import {api} from "@/api";
 import {ArrowLeft} from "lucide-react";
+import {useAuth} from "@/contexts/auth/useAuth";
 
 export function CreatePostPage() {
     const [title, setTitle] = useState("");
@@ -14,6 +15,14 @@ export function CreatePostPage() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const {toast} = useToast();
+    const {isAuthenticated, isLoading: isAuthLoading} = useAuth();
+
+    useEffect(() => {
+        if (!isAuthenticated && !isAuthLoading) {
+            navigate('/login');
+            return;
+        }
+    }, [isAuthLoading]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -5,7 +5,7 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {useToast} from "@/hooks/use-toast";
-import {useAuth} from "@/contexts/AuthContext";
+import {useAuth} from "@/contexts/auth/useAuth";
 import {api} from "@/api";
 
 export function LoginPage() {
@@ -37,7 +37,8 @@ export function LoginPage() {
                 });
                 navigate("/posts");
             }
-        } catch {
+        } catch (e) {
+            console.log(e)
             toast({
                 variant: "destructive",
                 title: "Error",

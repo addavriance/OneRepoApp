@@ -1,21 +1,13 @@
-import {createContext, useContext, useState, useEffect, ReactNode} from "react";
+import {ReactNode, useEffect, useState} from "react";
+import {UserBase} from "../../../shared/interfaces.ts";
+import {AuthContext} from "@/contexts/auth/context.tsx";
 import {api} from "@/api";
-import {UserBase} from "../../shared/interfaces";
-
-interface AuthContextType {
-    user: UserBase | null;
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    login: (token: string) => Promise<void>;
-    logout: () => void;
-    refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import {useToast} from "@/hooks/use-toast.ts";
 
 export function AuthProvider({children}: { children: ReactNode }) {
     const [user, setUser] = useState<UserBase | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const {toast} = useToast()
 
     const fetchUser = async (token: string) => {
         try {
@@ -26,10 +18,17 @@ export function AuthProvider({children}: { children: ReactNode }) {
                 setUser(null);
                 localStorage.removeItem('authToken');
             }
-        } catch (error) {
+        } catch (error: Error) {
+            setTimeout(() => toast(
+                {
+                    variant: "destructive",
+                    title: "Failed to fetch user:",
+                    description: error.message.substring(0, 40)
+                }
+            ), 500);
             console.error("Failed to fetch user:", error);
             setUser(null);
-            localStorage.removeItem('authToken');
+            // localStorage.removeItem('authToken');
         }
     };
 
@@ -76,12 +75,4 @@ export function AuthProvider({children}: { children: ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
-}
-
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
 }

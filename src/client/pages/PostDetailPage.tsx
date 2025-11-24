@@ -6,7 +6,7 @@ import {useToast} from "@/hooks/use-toast";
 import {api} from "@/api";
 import {PostDataUserBased} from "../../shared/interfaces";
 import {ArrowLeft, Trash2} from "lucide-react";
-import {useAuth} from "@/contexts/AuthContext.tsx";
+import {useAuth} from "@/contexts/auth/useAuth";
 
 export function PostDetailPage() {
     const {id} = useParams<{ id: string }>();
@@ -14,9 +14,14 @@ export function PostDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const {toast} = useToast();
-    const { user } = useAuth();
+    const { user, isAuthenticated, isLoading: isAuthLoading} = useAuth();
 
     useEffect(() => {
+        if (!isAuthenticated && !isAuthLoading) {
+            navigate('/login');
+            return;
+        }
+
         const loadPost = async () => {
             if (!id) return;
 
@@ -46,8 +51,10 @@ export function PostDetailPage() {
             }
         };
 
-        loadPost();
-    }, [id]);
+        if (isAuthenticated) {
+            loadPost();
+        }
+    }, [isAuthLoading, id]);
 
     const handleDelete = async () => {
         if (!id) return;
