@@ -1,5 +1,5 @@
 import {ReactNode, useEffect, useState} from "react";
-import {UserBase} from "../../../shared/interfaces.ts";
+import {Result, UserBase} from "../../../shared/interfaces.ts";
 import {AuthContext} from "@/contexts/auth/context.tsx";
 import {api} from "@/api";
 import {useToast} from "@/hooks/use-toast.ts";
@@ -42,6 +42,16 @@ export function AuthProvider({children}: { children: ReactNode }) {
         setUser(null);
     };
 
+    const updateUser = async (userData: UserBase) => {
+        const result = await api.saveUser(userData);
+        if (!result.error && user) {
+            setUser({
+                ...user,
+                ...userData
+            });
+        }
+    };
+
     const refreshUser = async () => {
         const token = localStorage.getItem('authToken');
         if (token) {
@@ -70,6 +80,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
                 login,
                 logout,
                 refreshUser,
+                updateUser,
             }}
         >
             {children}
