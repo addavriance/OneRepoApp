@@ -73,22 +73,10 @@ export class PostService extends BaseService implements IPostActions {
         };
     }
 
-    async deletePost(postId: number, userId?: Schema.Types.ObjectId): Promise<Result> {
-        if (!userId && !this.currentUser) {
-            return {
-                error: true,
-                messages: { userId: "Missing userId" },
-                code: 401,
-            };
-        }
-
-        if (!userId) {
-            userId = this.currentUser._id as Schema.Types.ObjectId;
-        }
-
+    async deletePost(postId: number): Promise<Result> {
         const result = await Post.findOneAndDelete({
             id: postId,
-            author: userId
+            author: this.currentUser._id
         });
 
         if (!result) {
