@@ -21,6 +21,8 @@ const postRoutes = new Router();
 
 const userRoutes = new Router();
 
+const todoRoutes = new Router();
+
 const loginSchema = z.object({
     username: z.string().min(1, "Username is required"),
     password: z.string().min(1, "Password is required"),
@@ -183,9 +185,89 @@ postRoutes.delete('/:id', authMiddleware, validateParams(getDeletePostSchema), a
     }
 });
 
+const createTodoSchema = z.object({
+    title: z.string().max(50),
+    description: z.string().optional(),
+    due_date: z.date().optional(),
+    reminder_date: z.date().optional(),
+})
+
+todoRoutes.post('/create', authMiddleware, validateBody(createTodoSchema), async (req: Request, res: Response) => {
+    try {
+        const todoData = req.body;
+
+        console.log(todoData);
+
+        const todoService = ServiceFactory.createTodoService(req);
+        const result = await todoService.createTodo(todoData);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+});
+
+const toggleDeleteTodoSchema = z.object({
+    id: z.string().min(1, 'Todo ID is required').regex(new RegExp(/^\d+$/), "Todo ID must be a positive number")
+})
+
+todoRoutes.delete('/:id', authMiddleware, validateParams(toggleDeleteTodoSchema), async (req: Request, res: Response) => {
+    try {
+        const todoId = parseInt(req.params.id);
+
+        const todoService = ServiceFactory.createTodoService(req);
+        const result = await todoService.deleteTodo(todoId);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+})
+
+todoRoutes.put('/:id', authMiddleware, validateParams(toggleDeleteTodoSchema), async (req: Request, res: Response) => {
+    try {
+        const todoId = parseInt(req.params.id);
+
+        const todoService = ServiceFactory.createTodoService(req);
+        const result = await todoService.toggleTodo(todoId);
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+})
+
+todoRoutes.get('/list', authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const todoService = ServiceFactory.createTodoService(req);
+        const result = await todoService.getTodos();
+
+        res.status(result.code).json(result);
+    } catch {
+        res.status(500).json({
+            error: true,
+            messages: { server: "Internal server error" },
+            code: 500
+        });
+    }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/post', postRoutes);
+app.use('/api/todo', todoRoutes)
 
 app.get('/health', (req, res) => {
     res.status(200).json({status: "OK"});

@@ -1,10 +1,6 @@
 import {Document, model, Schema, Model} from "mongoose";
-import {PostBase, UserBase} from "../shared/interfaces";
+import {PostBase, Timestamp, TodoBase, UserBase} from "../shared/interfaces";
 
-export interface Timestamp {
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 export interface IUser extends UserBase, Timestamp, Document {
     password: string;
@@ -128,5 +124,52 @@ postSchema.index({author: 1, id: 1}, {
 
 postSchema.index({id: 1});
 
+export interface ITodo extends TodoBase, Timestamp, Document {
+    author: Schema.Types.ObjectId;
+}
+
+export type ITodoModel = Model<ITodo>
+
+const todoSchema: Schema<ITodo, ITodoModel> = new Schema<ITodo, ITodoModel>({
+    author: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        index: true,
+        ref: 'User'
+    },
+    id: {
+        type: Number,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 0,
+        maxlength: 50
+    },
+    description: {
+        type: String,
+        trim: true,
+        minlength: 0,
+        maxlength: 300
+    },
+    completed: {
+        type: Boolean,
+        default: false,
+    },
+    due_date: { type: Date, default: null },
+    reminder_time: { type: Date, default: null },
+}, {
+    timestamps: true
+})
+
+todoSchema.index({author: 1, id: 1}, {
+    unique: true,
+});
+
+todoSchema.index({id: 1});
+
 export const User = model<IUser, IUserModel>('User', userSchema);
 export const Post = model<IPost, IPostModel>('Post', postSchema);
+export const Todo = model<IPost, ITodoModel>('Todo', todoSchema);

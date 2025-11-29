@@ -1,5 +1,10 @@
 import {Schema} from "mongoose";
 
+export interface Timestamp {
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface PostBase<ID = string> {
     author: ID
     id: number;
@@ -13,16 +18,30 @@ export interface UserBase {
     avatar_url?: string;
 }
 
-export interface AuthData {
-    authToken: string;
+export interface TodoBase {
+    id: number;
+    title: string;
+    description?: string;
+    completed: boolean;
+    due_date?: string;
+    reminder_time?: string;
 }
 
-export type PostData = PostBase & {createdAt: number, updatedAt: number};
-export type PostDataUserBased = PostBase<Partial<UserBase>> & {createdAt: number, updatedAt: number};
+export interface AuthData {authToken: string}
 
-export interface PostCreateData {
-    id: number
+export interface PostData extends PostBase, Timestamp {}
+export interface PostDataUserBased extends PostBase<Partial<UserBase>>, Timestamp {}
+export interface PostCreateData {id: number}
+
+export interface TodoData extends TodoBase, Timestamp {};
+export interface TodoCreateData {
+    title: string;
+    description?: string;
+    due_date?: Date;
+    reminder_time?: Date;
 }
+export type TodoUpdateData = TodoCreateData & {completed?: boolean}
+
 
 export interface Result<T = object> {
     error?: boolean;
@@ -35,11 +54,15 @@ export type AuthResult = Result<AuthData>;
 
 export type UserResult = Result<UserBase>;
 
-export type PostCreateResult = Result<PostCreateData>
+export type PostCreateResult = Result<PostCreateData>;
 
-export type PostGetResult = Result<PostDataUserBased>
+export type PostGetResult = Result<PostDataUserBased>;
 
 export type PostListResult = Result<PostDataUserBased[]>;
+
+export type TodoListResult = Result<TodoBase[]>;
+
+export type TodoCreateResult = Result<TodoBase>;
 
 export interface IAuthActions {
     login(username: string, password: string): Promise<AuthResult>;
@@ -58,4 +81,11 @@ export interface IPostActions {
     getPosts(offset: number, count: number, sortBy: number): Promise<PostListResult>;
 }
 
-export interface APIActions extends IAuthActions, IPostActions, IUserActions {}
+export interface ITodoActions {
+    createTodo(data: TodoCreateData): Promise<TodoCreateResult>;
+    getTodos(): Promise<TodoListResult>;
+    deleteTodo(id: number): Promise<TodoCreateResult>;
+    toggleTodo(id: number): Promise<TodoCreateResult>;
+}
+
+export interface APIActions extends IAuthActions, IPostActions, IUserActions, ITodoActions {}
