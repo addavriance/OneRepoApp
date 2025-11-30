@@ -1,11 +1,11 @@
-import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
+import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from "axios";
 import {
     APIActions,
     AuthResult,
     PostCreateResult,
     PostGetResult,
     PostListResult,
-    Result,
+    Result, TodoCreateData, TodoCreateResult, TodoListResult,
     UserBase,
     UserResult
 } from "../../shared/interfaces";
@@ -34,12 +34,11 @@ export class API implements APIActions {
     }
 
     async login(username: string, password: string): Promise<AuthResult> {
-        const response = await this.apiClient.post<AuthResult>('/auth/login', {
+        const response: AxiosResponse<AuthResult> = await this.apiClient.post('/auth/login', {
             username,
             password
         });
 
-        // Сохраняем токен в localStorage
         if (response.data.data?.authToken) {
             localStorage.setItem('authToken', response.data.data.authToken);
         }
@@ -48,7 +47,7 @@ export class API implements APIActions {
     }
 
     async register(username: string, email: string, password: string): Promise<Result> {
-        const response = await this.apiClient.post<Result>('/auth/register', {
+        const response: AxiosResponse<Result> = await this.apiClient.post('/auth/register', {
             username,
             email,
             password
@@ -57,7 +56,7 @@ export class API implements APIActions {
     }
 
     async getUser(token: string): Promise<UserResult> {
-        const response = await this.apiClient.get<UserResult>('/user/get', {
+        const response: AxiosResponse<UserResult> = await this.apiClient.get('/user/get', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -66,16 +65,16 @@ export class API implements APIActions {
     }
 
     async saveUser(userData: UserBase): Promise<Result> {
-        const response = await this.apiClient.post<Result>('/user/save', {
+        const response: AxiosResponse<Result> = await this.apiClient.post('/user/save', {
             username: userData.username,
             email: userData.email,
-            avatarUrl: userData.avatar_url
+            avatar_url: userData.avatar_url
         });
         return response.data;
     }
 
     async createPost(title: string, desc: string): Promise<PostCreateResult> {
-        const response = await this.apiClient.post<PostCreateResult>('/post/create', {
+        const response: AxiosResponse<PostCreateResult> = await this.apiClient.post('/post/create', {
             title,
             desc
         });
@@ -83,17 +82,17 @@ export class API implements APIActions {
     }
 
     async getPost(postId: number): Promise<PostGetResult> {
-        const response = await this.apiClient.get<PostGetResult>(`/post/${postId}`);
+        const response: AxiosResponse<PostGetResult> = await this.apiClient.get(`/post/${postId}`);
         return response.data;
     }
 
     async deletePost(postId: number): Promise<Result> {
-        const response = await this.apiClient.delete<Result>(`/post/${postId}`);
+        const response: AxiosResponse<Result> = await this.apiClient.delete(`/post/${postId}`);
         return response.data;
     }
 
     async getPosts(offset: number, count: number, sortBy: number): Promise<PostListResult> {
-        const response = await this.apiClient.get<PostListResult>('/post/list', {
+        const response: AxiosResponse<PostListResult> = await this.apiClient.get('/post/list', {
             params: {
                 offset: offset,
                 count: count,
@@ -102,6 +101,27 @@ export class API implements APIActions {
         } as AxiosRequestConfig);
         return response.data;
     }
+
+    async getTodos(): Promise<TodoListResult> {
+        const response: AxiosResponse<TodoListResult> = await this.apiClient.get('/todo/list');
+        return response.data;
+    }
+
+    async createTodo(data: TodoCreateData): Promise<TodoCreateResult> {
+        const response: AxiosResponse<TodoCreateResult> = await this.apiClient.post('/todo/create', {...data});
+        return response.data;
+    }
+
+    async deleteTodo(id: number): Promise<Result> {
+        const response: AxiosResponse<Result> = await this.apiClient.delete(`/todo/${id}`);
+        return response.data;
+    }
+
+    async toggleTodo(id: number): Promise<TodoCreateResult> {
+        const response: AxiosResponse<TodoCreateResult> = await this.apiClient.put(`/todo/${id}`);
+        return response.data;
+    }
+
 }
 
 export const api = new API();

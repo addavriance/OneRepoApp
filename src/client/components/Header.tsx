@@ -1,5 +1,5 @@
 import {Button} from "@/components/ui/button.tsx";
-import {LogOut, UserCircle, File} from "lucide-react";
+import {LogOut, UserCircle, File, NotebookPen} from "lucide-react";
 import {useAuth} from "@/contexts/auth/useAuth";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useMemo} from "react";
@@ -12,6 +12,10 @@ const pageDetails = {
     posts: {
         name: 'Posts',
         desc: 'Posts posts posts'
+    },
+    todos: {
+        name: 'Todos',
+        desc: 'Your todos with reminders'
     }
 }
 
@@ -48,6 +52,8 @@ export const Header = () => {
     const location = useRootRoute();
     const navigate = useNavigate();
 
+    if (!location) return <></>;
+
     const handleLogout = () => {
         logout();
         navigate("/login");
@@ -76,6 +82,10 @@ export const Header = () => {
                     <Button size="sm" variant="outline" onClick={() => navigate('/posts')}>
                         <File className="mr-2 h-4 w-4"/>
                         Posts
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/todos')}>
+                        <NotebookPen className="mr-2 h-4 w-4"/>
+                        Todos
                     </Button>
                     <Button size="sm" variant="outline" onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4"/>

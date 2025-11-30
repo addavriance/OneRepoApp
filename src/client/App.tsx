@@ -6,7 +6,9 @@ import { PostsPage } from "./pages/PostsPage";
 import { CreatePostPage } from "./pages/CreatePostPage";
 import { PostDetailPage } from "./pages/PostDetailPage";
 import { Header } from "@/components/Header";
-import {ProfilePage} from "@/pages/ProfilePage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
+import { TodoPage } from "@/pages/TodoPage.tsx";
 
 function App() {
     return (
@@ -20,6 +22,7 @@ function App() {
                 <Route path="/posts/create" element={<CreatePostPage />} />
                 <Route path="/posts/:id" element={<PostDetailPage />} />
                 <Route path="/profile" element={<ProfilePage/>}/>
+                <Route path="/todos" element={<TodoPage/>}/>
                 <Route path="/404" element={<NotFoundPage />} />
                 <Route path="*" element={<Navigate to="/404" replace/>} />
             </Routes>

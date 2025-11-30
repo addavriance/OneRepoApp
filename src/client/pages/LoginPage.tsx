@@ -37,8 +37,7 @@ export function LoginPage() {
                 });
                 navigate("/posts");
             }
-        } catch (e) {
-            console.log(e)
+        } catch {
             toast({
                 variant: "destructive",
                 title: "Error",

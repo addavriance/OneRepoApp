@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "typeRoots": ["./node_modules/@types", "./src/server/types"],
-    "types": ["node", "react", "react-dom"],
+    "types": ["node", "react", "react-dom", "vite-plugin-svgr/client"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/client/*"]
