@@ -20,6 +20,8 @@ function App() {
                 <Route path="/posts/create" element={<CreatePostPage />} />
                 <Route path="/posts/:id" element={<PostDetailPage />} />
                 <Route path="/profile" element={<ProfilePage/>}/>
+                <Route path="/404" element={<NotFoundPage />} />
+                <Route path="*" element={<Navigate to="/404" replace/>} />
             </Routes>
             <Toaster />
         </BrowserRouter>
