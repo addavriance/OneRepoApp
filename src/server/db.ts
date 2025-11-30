@@ -158,8 +158,9 @@ const todoSchema: Schema<ITodo, ITodoModel> = new Schema<ITodo, ITodoModel>({
         type: Boolean,
         default: false,
     },
-    due_date: { type: Date, default: null },
-    reminder_time: { type: Date, default: null },
+    due_date: String,
+    reminder_time: String,
+    reminder_interval: Number,
 }, {
     timestamps: true
 })

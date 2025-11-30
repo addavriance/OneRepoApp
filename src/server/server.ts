@@ -78,7 +78,7 @@ userRoutes.get('/get', authMiddleware, async (req: Request, res: Response) => {
 const saveUserSchema = z.object({
     username: z.string().min(3, "Minimum length is 3"),
     email: z.email("Invalid email format"),
-    avatarUrl: z.url("Invalid url format").optional(),
+    avatar_url: z.url("Invalid url format").optional(),
 });
 
 userRoutes.post('/save', authMiddleware, validateBody(saveUserSchema), async (req: Request, res: Response) => {
@@ -188,15 +188,18 @@ postRoutes.delete('/:id', authMiddleware, validateParams(getDeletePostSchema), a
 const createTodoSchema = z.object({
     title: z.string().max(50),
     description: z.string().optional(),
-    due_date: z.date().optional(),
-    reminder_date: z.date().optional(),
+    due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'Date must be in format YYYY-MM-DD'
+    }).optional(),
+    reminder_time: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: 'Reminder time must be in format HH:MM (24-hour format)'
+    }).optional(),
+    reminder_interval: z.number().int().min(1).max(10),
 })
 
 todoRoutes.post('/create', authMiddleware, validateBody(createTodoSchema), async (req: Request, res: Response) => {
     try {
         const todoData = req.body;
-
-        console.log(todoData);
 
         const todoService = ServiceFactory.createTodoService(req);
         const result = await todoService.createTodo(todoData);

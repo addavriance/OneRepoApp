@@ -25,6 +25,7 @@ export interface TodoBase {
     completed: boolean;
     due_date?: string;
     reminder_time?: string;
+    reminder_interval: number;
 }
 
 export interface AuthData {authToken: string}
@@ -37,8 +38,9 @@ export interface TodoData extends TodoBase, Timestamp {};
 export interface TodoCreateData {
     title: string;
     description?: string;
-    due_date?: Date;
-    reminder_time?: Date;
+    due_date?: string;
+    reminder_time?: string;
+    reminder_interval?: number;
 }
 export type TodoUpdateData = TodoCreateData & {completed?: boolean}
 
@@ -84,7 +86,7 @@ export interface IPostActions {
 export interface ITodoActions {
     createTodo(data: TodoCreateData): Promise<TodoCreateResult>;
     getTodos(): Promise<TodoListResult>;
-    deleteTodo(id: number): Promise<TodoCreateResult>;
+    deleteTodo(id: number): Promise<Result>;
     toggleTodo(id: number): Promise<TodoCreateResult>;
 }
 

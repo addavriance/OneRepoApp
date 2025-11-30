@@ -1,5 +1,5 @@
 import {
-    ITodoActions,
+    ITodoActions, Result,
     TodoBase,
     TodoCreateData,
     TodoCreateResult,
@@ -39,7 +39,7 @@ export class TodoService extends BaseService implements ITodoActions {
         }
     }
 
-    async deleteTodo(id: number): Promise<TodoCreateResult> {
+    async deleteTodo(id: number): Promise<Result> {
         const result = await Todo.findOneAndDelete({
             id,
             author: this.currentUser._id
@@ -61,13 +61,16 @@ export class TodoService extends BaseService implements ITodoActions {
     }
 
     async getTodos(): Promise<TodoListResult> {
-        const result = await Todo.find().exec() as ITodo[];
+        const result = await Todo.find({author: this.currentUser._id}).exec() as ITodo[];
 
         const todosData: TodoBase[] = result.map((todoRaw) => {
             return {
                 id: todoRaw.id ,
                 title: todoRaw.title,
                 description: todoRaw.description,
+                reminder_time: todoRaw.reminder_time,
+                due_date: todoRaw.due_date,
+                reminder_interval: todoRaw.reminder_interval,
                 createdAt: todoRaw.createdAt,
                 updatedAt: todoRaw.updatedAt
             } as TodoBase;
